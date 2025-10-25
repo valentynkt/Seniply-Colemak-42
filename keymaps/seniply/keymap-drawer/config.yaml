@@ -1,0 +1,205 @@
+# Keymap Drawer Configuration for Seniply on Cleo/Corne
+# Generate images: keymap parse -c config.yaml -q keymap.c > layout.yaml && keymap draw layout.yaml > keymap.svg
+
+draw_config:
+  dark_mode: auto
+  n_columns: 2  # Show 2 layers side-by-side
+  separate_combo_diagrams: true
+  combo_diagrams_scale: 2
+  key_w: 60.0
+  key_h: 56.0
+  split_gap: 30.0
+  combo_w: 24.0
+  combo_h: 20.0
+  key_rx: 6.0
+  key_ry: 6.0
+  inner_pad_w: 2.0
+  inner_pad_h: 2.0
+  outer_pad_w: 30.0
+  outer_pad_h: 56.0
+  line_spacing: 1.2
+  arc_scale: 1.0
+  append_colon_to_layer_header: true
+  small_pad: 2.0
+  legend_rel_x: 0.0
+  legend_rel_y: 0.0
+  svg_style: |
+    /* Custom color scheme for better visibility */
+    svg.keymap {
+      font-family: 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .held { fill: #ffc107; }
+    .ghost { stroke-dasharray: 4, 2; }
+
+    /* Layer-specific colors */
+    rect.key.layer-0 { fill: #e8e8e8; }  /* BASE - light gray */
+    rect.key.layer-1 { fill: #bbdefb; }  /* NAV - light blue */
+    rect.key.layer-2 { fill: #c8e6c9; }  /* SYM - light green */
+    rect.key.layer-3 { fill: #ffe0b2; }  /* NUM - light orange */
+    rect.key.layer-4 { fill: #f8bbd0; }  /* FUN - light pink */
+
+    /* Special key types */
+    .keycode-llock { fill: #fff176 !important; }  /* Layer lock - yellow */
+    .keycode-hyper { fill: #ce93d8 !important; }  /* Hyper - purple */
+    .keycode-os_ { fill: #80deea !important; }    /* One-shot mods - cyan */
+
+parse_config:
+  mark_alternate_layer_activators: false
+  sticky_label: "OS"
+  trans_legend:
+    t: "▽"
+    type: "tap"
+
+  # QMK-specific keycode mappings
+  qmk_keycode_map:
+    # Layer switches
+    LLOCK:
+      t: "🔒\nLock"
+      type: tap
+    SPC_NAV:
+      tap: Space
+      hold: "→NAV"
+      type: hold
+    ENT_SYM:
+      tap: Enter
+      hold: "→SYM"
+      type: hold
+    OSM_SFT:
+      t: "OS\nShift"
+      type: tap
+    MO_FUN:
+      t: "→FUN"
+      type: tap
+
+    # Hyper and Meh
+    HYPER:
+      t: "Hyper\nC+S+A+G"
+      type: tap
+    MEH:
+      t: "Meh\nC+S+A"
+      type: tap
+
+    # One-shot modifiers
+    OS_SHFT:
+      t: "OS\nShift"
+      type: tap
+    OS_CTRL:
+      t: "OS\nCtrl"
+      type: tap
+    OS_ALT:
+      t: "OS\nAlt"
+      type: tap
+    OS_GUI:
+      t: "OS\nGUI"
+      type: tap
+
+    # Custom clipboard keys
+    MY_COPY:
+      t: "Copy\nC+C"
+      type: tap
+    MY_PASTE:
+      t: "Paste\nC+V"
+      type: tap
+    MY_CUT:
+      t: "Cut\nC+X"
+      type: tap
+    MY_UNDO:
+      t: "Undo\nC+Z"
+      type: tap
+    MY_REDO:
+      t: "Redo\nC+Y"
+      type: tap
+
+    # Vim navigation
+    VIM_END:
+      t: "$\nEnd"
+      type: tap
+    VIM_STA:
+      t: "0\nStart"
+      type: tap
+    VIM_FST:
+      t: "^\nFirst"
+      type: tap
+
+    # Standard keycodes with better labels
+    KC_ESC:
+      t: "Esc"
+    KC_TAB:
+      t: "Tab"
+    KC_BSPC:
+      t: "Bksp"
+    KC_SPC:
+      t: "Space"
+    KC_ENT:
+      t: "Enter"
+    KC_UNDS:
+      t: "_"
+    KC_SCLN:
+      t: ";\n(tap:)"
+      type: tap
+    KC_QUOT:
+      t: "'"
+    KC_COMM:
+      t: ","
+    KC_DOT:
+      t: "."
+    KC_SLSH:
+      t: "/"
+
+    # Arrows
+    KC_UP:
+      t: "↑"
+    KC_DOWN:
+      t: "↓"
+    KC_LEFT:
+      t: "←"
+    KC_RGHT:
+      t: "→"
+
+    # Navigation
+    KC_HOME:
+      t: "Home"
+    KC_END:
+      t: "End"
+    KC_PGUP:
+      t: "PgUp"
+    KC_PGDN:
+      t: "PgDn"
+    KC_DEL:
+      t: "Del"
+
+    # Media keys
+    KC_MUTE:
+      t: "Mute"
+    KC_VOLU:
+      t: "Vol+"
+    KC_VOLD:
+      t: "Vol-"
+    KC_MPLY:
+      t: "⏯"
+    KC_MPRV:
+      t: "⏮"
+    KC_MNXT:
+      t: "⏭"
+    KC_BRIU:
+      t: "Bri+"
+    KC_BRID:
+      t: "Bri-"
+
+    # System
+    KC_PSCR:
+      t: "PrtSc"
+    KC_APP:
+      t: "Menu"
+    QK_BOOT:
+      t: "Boot\n⚡"
+      type: tap
+
+  # Layer names
+  layer_names:
+    0: "BASE (Colemak-DH)"
+    1: "NAV (Navigation + Vim)"
+    2: "SYM (Symbols)"
+    3: "NUM (Numbers)"
+    4: "FUN (Function)"
