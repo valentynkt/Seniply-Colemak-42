@@ -11,8 +11,15 @@
 #define ONESHOT_TAP_TOGGLE 2          // Double-tap to lock one-shot modifiers (not used - using Callum style)
 #define ONESHOT_TIMEOUT 3000          // 3 second one-shot timeout (not used - using Callum style)
 
-// Note: Using custom Callum-style one-shot modifiers instead of QMK's OSM
-// Callum one-shots never timeout - they queue until used or cancelled
+// Flow system oneshot configuration (PR #16174)
+// Enhanced oneshot with timer support for auto-timeout and hold detection
+#define FLOW_ONESHOT_TERM 500           // Auto-release oneshot after 500ms
+#define FLOW_ONESHOT_WAIT_TERM 500      // Hold >500ms = normal mod/layer, not oneshot
+#define FLOW_LAYERS_ENABLE              // Enable oneshot layer support
+
+// Caps Word configuration (works with OS_SHFT)
+#define DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD  // Double-tap OS_SHFT to activate caps word
+#define CAPS_WORD_IDLE_TIMEOUT 5000          // 5 second timeout for caps word
 
 // Layer lock configuration
 #define LAYER_LOCK_IDLE_TIMEOUT 60000  // 60 second timeout for layer lock

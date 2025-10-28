@@ -12,35 +12,39 @@ enum layers {
 
 // Custom keycodes
 enum custom_keycodes {
-    // One-shot modifiers (Callum style, no timers)
-    OS_SHFT = SAFE_RANGE,
+    // Dual-function FUN layer access (moved to top - far from MY_SAVE to prevent enum collision)
+    FUN_KEY = SAFE_RANGE,  // Tap = one-shot FUN, Hold = momentary FUN
+
+    // One-shot modifiers (Flow system with timers)
+    OS_SHFT,
     OS_CTRL,
     OS_ALT,
     OS_GUI,
     OS_ALTGR,  // AltGr / Right Alt (custom name to avoid QMK conflict)
 
-    // Clipboard keys (OS-independent)
-    MY_COPY,
-    MY_PASTE,
-    MY_CUT,
+    // Oneshot layers (Flow system)
+    OS_FUN,    // Oneshot FUN layer - tap once, use once
 
-    // Undo/Redo (OS-independent)
-    MY_UNDO,
-    MY_REDO,
+    // Clipboard keys (macOS - hardcoded)
+    MY_COPY,   // Cmd+C
+    MY_PASTE,  // Cmd+V
+    MY_CUT,    // Cmd+X
 
-    // Common shortcuts (OS-independent)
-    MY_SAVE,  // Save - Cmd+S (macOS) / Ctrl+S (Windows/Linux)
+    // Undo/Redo (macOS - hardcoded)
+    MY_UNDO,   // Cmd+Z
+    MY_REDO,   // Cmd+Shift+Z
 
-    // Dual-function FUN layer access
-    FUN_KEY,  // Tap = one-shot FUN, Hold = momentary FUN
+    // Common shortcuts (macOS - hardcoded)
+    MY_SAVE,   // Cmd+S
 };
 
 // Layer lock key (provided by QMK)
-#define LLOCK QK_LOCK
+// QK_LAYER_LOCK (alias QK_LLCK) locks the current layer when pressed
+#define LLOCK QK_LLCK
 
 // Layer tap keys
-#define SPC_EXT LT(_EXTEND, KC_SPC)
-#define TAB_SYM LT(_SYM, KC_TAB)
+#define ESC_EXT LT(_EXTEND, KC_ESC)  // Esc taps to Esc, hold for EXTEND layer
+#define TAB_SYM LT(_SYM, KC_TAB)     // Tab taps to Tab, hold for SYM layer
 
 // Vim line navigation keys
 #define VIM_END KC_DLR   // $ - end of line
@@ -62,8 +66,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ========================================================================
     // Left: Q W F P B | A R S T G | Z X C D V
     // Right: J L U Y ; | M N E I O | K H , . /
-    // Thumbs: ESC | OS_SHFT (Callum style) | SPACE→EXTEND  ---  BSPC | TAB→SYM | ENTER
-    // Note: OS_SHFT uses Callum implementation (no timeout, queues until used)
+    // Thumbs: OS_SHFT (Callum) | SPACE (normal) | ESC→EXTEND (hold)  ---  TAB→SYM (hold) | BSPC | ENTER
+    // Note: OS_SHFT uses Callum implementation (no timeout, double-tap for caps word)
     [_BASE] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
       KC_NO,   KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, FUN_KEY,
@@ -72,7 +76,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       KC_DEL,  KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                         KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH, KC_NO,
   //└────────┴────────┴────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┴────────┴────────┘
-                                 KC_ESC,  OS_SHFT, SPC_EXT,                      KC_BSPC, TAB_SYM, KC_ENT
+                                 OS_SHFT, KC_SPC,  ESC_EXT,                      TAB_SYM, KC_BSPC, KC_ENT
   //                            └────────┴────────┴────────┘                    └────────┴────────┴────────┘
     ),
 
@@ -166,7 +170,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // Behavior:
 // - Tap modifier: Queues modifier for next non-modifier key
 // - Hold modifier: Acts as normal modifier while held
-// - Cancel: Press layer-tap key (SPC_EXT or TAB_SYM) to cancel queued mods
+// - Cancel: Press layer-tap key (ESC_EXT or TAB_SYM) to cancel queued mods
 // - Ignored keys: Other modifiers and layer switches don't consume the mod
 //
 // Example: Tap OS_CTRL, switch to EXTEND layer, press C = Ctrl+C (copy)
@@ -177,6 +181,18 @@ oneshot_state os_ctrl_state = os_up_unqueued;
 oneshot_state os_alt_state = os_up_unqueued;
 oneshot_state os_gui_state = os_up_unqueued;
 oneshot_state os_altgr_state = os_up_unqueued;
+
+// Flow system oneshot layer states
+oneshot_state os_fun_state = os_up_unqueued;
+
+// Per-modifier independent timer structs (PR #16174 inspired)
+// Prevents timer interference between multiple oneshot modifiers
+// Note: os_shft uses Callum implementation (no timers needed)
+static oneshot_timers_t os_ctrl_timers = {0};
+static oneshot_timers_t os_alt_timers = {0};
+static oneshot_timers_t os_gui_timers = {0};
+static oneshot_timers_t os_altgr_timers = {0};
+static oneshot_timers_t os_fun_timers = {0};
 
 // ============================================================================
 // FUN_KEY DUAL-FUNCTION STATE (Tap = one-shot, Hold = momentary)
@@ -189,11 +205,12 @@ static bool fun_oneshot_active = false;
 static uint16_t fun_key_timer = 0;
 
 // Define keys that cancel oneshot mods
+// Note: Layer-tap keys (ESC_EXT, TAB_SYM) are NOT cancel keys
+// They should consume oneshot mods when tapped, not cancel them
 bool is_oneshot_cancel_key(uint16_t keycode) {
     switch (keycode) {
-    case SPC_EXT:
-    case TAB_SYM:
-        return true;
+    // Currently no keys cancel oneshot mods
+    // Oneshot mods timeout automatically after FLOW_ONESHOT_TERM (500ms)
     default:
         return false;
     }
@@ -203,6 +220,7 @@ bool is_oneshot_cancel_key(uint16_t keycode) {
 // This allows stacking multiple one-shot modifiers and carrying them between layers
 bool is_oneshot_ignored_key(uint16_t keycode) {
     switch (keycode) {
+    // Oneshot modifiers (allow stacking)
     case OS_SHFT:
     case OS_CTRL:
     case OS_ALT:
@@ -216,6 +234,14 @@ bool is_oneshot_ignored_key(uint16_t keycode) {
     case KC_RALT:
     case KC_LGUI:
     case KC_RGUI:
+    // Oneshot layers (allow carrying mods to other layers)
+    case OS_FUN:
+    // Layer-tap keys (allow carrying mods to other layers)
+    case ESC_EXT:
+    case TAB_SYM:
+    // Other layer switching keys (FUN_KEY and LLOCK don't send characters, so safe to ignore)
+    case FUN_KEY:
+    case LLOCK:
         return true;
     default:
         return false;
@@ -227,75 +253,80 @@ bool is_oneshot_ignored_key(uint16_t keycode) {
 // ============================================================================
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // Update oneshot states
-    update_oneshot(&os_shft_state, KC_LSFT, OS_SHFT, keycode, record);
-    update_oneshot(&os_ctrl_state, KC_LCTL, OS_CTRL, keycode, record);
-    update_oneshot(&os_alt_state, KC_LALT, OS_ALT, keycode, record);
-    update_oneshot(&os_gui_state, KC_LGUI, OS_GUI, keycode, record);
-    update_oneshot(&os_altgr_state, KC_RALT, OS_ALTGR, keycode, record);
+    // ========================================================================
+    // LLOCK (QMK Layer Lock) - Pass through to QMK for native handling
+    // ========================================================================
+    // QMK's layer_lock: Press once to lock current layer, press again to unlock
+    // This is NOT a oneshot - it's a persistent lock/unlock toggle
+    if (keycode == LLOCK) {
+        return true;  // Let QMK's process_layer_lock() handle it
+    }
+
+    // ========================================================================
+    // ONESHOT SYSTEM (Custom implementation)
+    // ========================================================================
+    // Shift uses original Callum implementation (no timers, pure sticky behavior)
+    update_oneshot_callum(&os_shft_state, KC_LSFT, OS_SHFT, keycode, record);
+
+    // Other modifiers use PR #16174 implementation (with timers and auto-timeout)
+    update_oneshot(&os_ctrl_state, &os_ctrl_timers, KC_LCTL, OS_CTRL, keycode, record);
+    update_oneshot(&os_alt_state, &os_alt_timers, KC_LALT, OS_ALT, keycode, record);
+    update_oneshot(&os_gui_state, &os_gui_timers, KC_LGUI, OS_GUI, keycode, record);
+    update_oneshot(&os_altgr_state, &os_altgr_timers, KC_RALT, OS_ALTGR, keycode, record);
+
+    // Oneshot layer with PR #16174 (independent timer and layer origin detection)
+    update_oneshot_layer(&os_fun_state, &os_fun_timers, _FUN, OS_FUN, keycode, record);
+
+    // Prevent oneshot trigger keys from being processed further by QMK
+    // The update_oneshot* functions handle the modifier registration/unregistration
+    switch (keycode) {
+        case OS_SHFT:
+        case OS_CTRL:
+        case OS_ALT:
+        case OS_GUI:
+        case OS_ALTGR:
+        case OS_FUN:
+            return false;  // Don't let QMK process these custom keycodes
+    }
 
     // Handle custom keycodes
     switch (keycode) {
         // ====================================================================
-        // OS-independent clipboard operations
+        // macOS clipboard & shortcut operations
         // ====================================================================
         case MY_COPY:
             if (record->event.pressed) {
-                #ifdef __APPLE__
-                    tap_code16(LGUI(KC_C));
-                #else
-                    tap_code16(LCTL(KC_C));
-                #endif
+                tap_code16(LGUI(KC_C));  // Cmd+C
             }
             return false;
 
         case MY_PASTE:
             if (record->event.pressed) {
-                #ifdef __APPLE__
-                    tap_code16(LGUI(KC_V));
-                #else
-                    tap_code16(LCTL(KC_V));
-                #endif
+                tap_code16(LGUI(KC_V));  // Cmd+V
             }
             return false;
 
         case MY_CUT:
             if (record->event.pressed) {
-                #ifdef __APPLE__
-                    tap_code16(LGUI(KC_X));
-                #else
-                    tap_code16(LCTL(KC_X));
-                #endif
+                tap_code16(LGUI(KC_X));  // Cmd+X
             }
             return false;
 
         case MY_UNDO:
             if (record->event.pressed) {
-                #ifdef __APPLE__
-                    tap_code16(LGUI(KC_Z));
-                #else
-                    tap_code16(LCTL(KC_Z));
-                #endif
+                tap_code16(LGUI(KC_Z));  // Cmd+Z
             }
             return false;
 
         case MY_REDO:
             if (record->event.pressed) {
-                #ifdef __APPLE__
-                    tap_code16(SGUI(KC_Z));  // Cmd+Shift+Z on Mac
-                #else
-                    tap_code16(LCTL(KC_Y));  // Ctrl+Y on Windows/Linux
-                #endif
+                tap_code16(SGUI(KC_Z));  // Cmd+Shift+Z
             }
             return false;
 
         case MY_SAVE:
             if (record->event.pressed) {
-                #ifdef __APPLE__
-                    tap_code16(LGUI(KC_S));  // Cmd+S on Mac
-                #else
-                    tap_code16(LCTL(KC_S));  // Ctrl+S on Windows/Linux
-                #endif
+                tap_code16(LGUI(KC_S));  // Cmd+S
             }
             return false;
 
@@ -336,6 +367,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     return true;
+}
+
+// ============================================================================
+// TRI-LAYER ACTIVATION (EXTEND + SYM = NUM)
+// ============================================================================
+
+void matrix_scan_user(void) {
+    // Shift uses Callum (no timeout check needed - waits indefinitely)
+
+    // Check other modifier timeouts with independent timers
+    // Auto-release after FLOW_ONESHOT_TERM (500ms) if unused
+    check_oneshot_timeout(&os_ctrl_state, &os_ctrl_timers, KC_LCTL);
+    check_oneshot_timeout(&os_alt_state, &os_alt_timers, KC_LALT);
+    check_oneshot_timeout(&os_gui_state, &os_gui_timers, KC_LGUI);
+    check_oneshot_timeout(&os_altgr_state, &os_altgr_timers, KC_RALT);
+
+    // Check oneshot layer timeout with independent timer
+    check_oneshot_layer_timeout(&os_fun_state, &os_fun_timers, _FUN);
 }
 
 // ============================================================================
