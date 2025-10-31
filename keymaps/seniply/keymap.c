@@ -62,19 +62,20 @@ enum custom_keycodes {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     // ========================================================================
-    // Layer 0: BASE (Colemak-DH - Standard Layout)
+    // Layer 0: BASE (Gallium Colstag xq swap with j↔z and c↔w)
     // ========================================================================
-    // Left: Q W F P B | A R S T G | Z X C D V
-    // Right: J L U Y ; | M N E I O | K H , . /
+    // Left: B L D W V | N R T S G | Q X M C J
+    // Right: Z Y O U , | P H A E I | K F ' / .
+    // Outer columns: --/DEL/HYPR (left), FUN/--/MEH (right)
     // Thumbs: OS_SHFT (Callum) | SPACE (normal) | ESC→EXTEND (hold)  ---  TAB→SYM (hold) | BSPC | ENTER
     // Note: OS_SHFT uses Callum implementation (no timeout, double-tap for caps word)
     [_BASE] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
-      KC_NO,   KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                         KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, FUN_KEY,
+      KC_NO,   KC_B,    KC_L,    KC_D,    KC_W,    KC_V,                         KC_Z,    KC_Y,    KC_O,    KC_U,    KC_COMM, FUN_KEY,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
-      MY_HYPR, KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                         KC_M,    KC_N,    KC_E,    KC_I,    KC_O,    MY_MEH,
+      MY_HYPR, KC_N,    KC_R,    KC_T,    KC_S,    KC_G,                         KC_P,    KC_H,    KC_A,    KC_E,    KC_I,    MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
-      KC_DEL,  KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                         KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH, KC_NO,
+      KC_DEL,  KC_Q,    KC_X,    KC_M,    KC_C,    KC_J,                         KC_K,    KC_F,    KC_QUOT, KC_SLSH, KC_DOT,  KC_NO,
   //└────────┴────────┴────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┴────────┴────────┘
                                  OS_SHFT, KC_SPC,  ESC_EXT,                      TAB_SYM, KC_BSPC, KC_ENT
   //                            └────────┴────────┴────────┘                    └────────┴────────┴────────┘
@@ -146,7 +147,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Right: Numpad-style F-keys (F7-9, F4-6, F1-3)
     [_FUN] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
-      LLOCK,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                        KC_NO,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  LLOCK,
+      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                        KC_NO,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_NO,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       MY_HYPR, OS_SHFT, OS_ALT,  OS_GUI,  OS_CTRL, OS_ALTGR,                     KC_NO,   KC_F4,   KC_F5,   KC_F6,   KC_F11,  MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
