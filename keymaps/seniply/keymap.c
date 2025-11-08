@@ -84,15 +84,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ========================================================================
     // Layer 1: EXTEND (Navigation - Seniply JSON-aligned)
     // ========================================================================
-    // Left: Esc(outer), Ctrl+F, Vim($^0), INS, one-shot mods R=Alt/S=Gui/T=Ctrl/D=AltGr
-    //       A=Save (Cmd+S/Ctrl+S) - prioritized over Shift (BASE OS_SHFT accessible via left thumb)
+    // Left: Esc(outer), Ctrl+F, Vim($^0), INS, one-shot mods on home row
+    //       Home row: A=Shift/R=Alt/S=Gui/T=Ctrl/D=AltGr (consistent with SYM/NUM/FUN)
     // Right: EXACT Seniply JSON - PgUp/Home/↑/End/Caps, PgDn/←/↓/→/Del, Ent/Bspc/Tab/F13/Prt
     // Clipboard: Undo/Cut/Copy/Paste/Redo on bottom row
     [_EXTEND] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
       KC_ESC,  LCTL(KC_F),VIM_END,VIM_STA,VIM_FST, KC_INS,                       KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_CAPS, FUN_KEY,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
-      MY_HYPR, MY_SAVE, OS_ALT,  OS_GUI,  OS_CTRL, OS_ALTGR,                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_DEL,  MY_MEH,
+      MY_HYPR, OS_SHFT, OS_ALT,  OS_GUI,  OS_CTRL, OS_ALTGR,                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_DEL,  MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       LLOCK,   MY_UNDO, MY_CUT,  MY_COPY, MY_PASTE,MY_REDO,                      KC_ENT,  KC_BSPC, KC_TAB,  KC_F13,  KC_PSCR, LLOCK,
   //└────────┴────────┴────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┴────────┴────────┘
