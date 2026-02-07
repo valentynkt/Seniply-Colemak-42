@@ -66,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ========================================================================
     // Left: B L D W V | N R T S G | Q X M C J
     // Right: Z Y O U , | P H A E I | K F ' / .
-    // Outer columns: --/DEL/HYPR (left), FUN/--/MEH (right)
+    // Outer columns: --/HYPR/-- (left), FUN/MEH/-- (right)
     // Thumbs: OS_SHFT (Callum) | SPACE (normal) | ESC→EXTEND (hold)  ---  TAB→SYM (hold) | BSPC | ENTER
     // Note: OS_SHFT uses Callum implementation (no timeout, double-tap for caps word)
     [_BASE] = LAYOUT_split_3x6_3(
@@ -75,7 +75,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       MY_HYPR, KC_N,    KC_R,    KC_T,    KC_S,    KC_G,                         KC_P,    KC_H,    KC_A,    KC_E,    KC_I,    MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
-      KC_DEL,  KC_Q,    KC_X,    KC_M,    KC_C,    KC_J,                         KC_K,    KC_F,    KC_QUOT, KC_SLSH, KC_DOT,  KC_NO,
+      KC_NO,   KC_Q,    KC_X,    KC_M,    KC_C,    KC_J,                         KC_K,    KC_F,    KC_QUOT, KC_SLSH, KC_DOT,  KC_NO,
   //└────────┴────────┴────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┴────────┴────────┘
                                  OS_SHFT, KC_SPC,  ESC_EXT,                      TAB_SYM, KC_BSPC, KC_ENT
   //                            └────────┴────────┴────────┘                    └────────┴────────┴────────┘
@@ -84,17 +84,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ========================================================================
     // Layer 1: EXTEND (Navigation - Seniply JSON-aligned)
     // ========================================================================
-    // Left: Esc(outer), Ctrl+F, Vim($^0), INS, one-shot mods on home row
+    // Left: Esc(outer), Vim(0^$), one-shot mods on home row
     //       Home row: A=Shift/R=Alt/S=Gui/T=Ctrl/D=AltGr (consistent with SYM/NUM/FUN)
-    // Right: EXACT Seniply JSON - PgUp/Home/↑/End/Caps, PgDn/←/↓/→/Del, Ent/Bspc/Tab/F13/Prt
+    // Right: PgUp/Home/↑/End/Caps, PgDn/←/↓/→/Del, F13
     // Clipboard: Undo/Cut/Copy/Paste/Redo on bottom row
     [_EXTEND] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
-      KC_ESC,  LCTL(KC_F),VIM_END,VIM_STA,VIM_FST, KC_INS,                       KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_CAPS, FUN_KEY,
+      KC_ESC,  KC_NO,   VIM_STA, VIM_FST, VIM_END, KC_NO,                        KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_CAPS, FUN_KEY,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       MY_HYPR, OS_SHFT, OS_ALT,  OS_GUI,  OS_CTRL, OS_ALTGR,                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_DEL,  MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
-      LLOCK,   MY_UNDO, MY_CUT,  MY_COPY, MY_PASTE,MY_REDO,                      KC_ENT,  KC_BSPC, KC_TAB,  KC_F13,  KC_PSCR, LLOCK,
+      LLOCK,   MY_UNDO, MY_CUT,  MY_COPY, MY_PASTE,MY_REDO,                      KC_NO,   KC_F13,  KC_NO,   KC_NO,   KC_NO,   LLOCK,
   //└────────┴────────┴────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┴────────┴────────┘
                                  _______, _______, _______,                      _______, _______, _______
   //                            └────────┴────────┴────────┘                    └────────┴────────┴────────┘
@@ -103,15 +103,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ========================================================================
     // Layer 2: SYM (Symbols - Seniply-aligned)
     // ========================================================================
-    // Left: Shifted numbers (top), one-shot mods A=Shift/R=Alt/S=Gui/T=Ctrl (consistent), symbols (bottom)
-    //       Bottom row cleaned: no duplicates - only unique symbols \ | &
+    // Left: @# annotations + vim(^$%) top, mods + ! home, shell(\|&) bottom
+    //       Vim positions match EXTEND layer for muscle memory
     // Right: Exact Seniply layout - = ` : ; + / * ( { [ - / ~ ) } ] _
     // Operators = * + - match NUM layer positions
     [_SYM] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
-      KC_ESC,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                      KC_EQL,  KC_GRV,  KC_COLN, KC_SCLN, KC_PLUS, FUN_KEY,
+      KC_ESC,  KC_AT,   KC_HASH, KC_CIRC, KC_DLR,  KC_PERC,                      KC_EQL,  KC_GRV,  KC_COLN, KC_SCLN, KC_PLUS, FUN_KEY,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
-      MY_HYPR, OS_SHFT, OS_ALT,  OS_GUI,  OS_CTRL, KC_CIRC,                      KC_ASTR, KC_LPRN, KC_LCBR, KC_LBRC, KC_MINS, MY_MEH,
+      MY_HYPR, OS_SHFT, OS_ALT,  OS_GUI,  OS_CTRL, KC_EXLM,                      KC_ASTR, KC_LPRN, KC_LCBR, KC_LBRC, KC_MINS, MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       LLOCK,   KC_NO,   KC_NO,   KC_BSLS, KC_PIPE, KC_AMPR,                      KC_TILD, KC_RPRN, KC_RCBR, KC_RBRC, KC_UNDS, LLOCK,
   //└────────┴────────┴────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┴────────┴────────┘
@@ -122,18 +122,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ========================================================================
     // Layer 3: NUM (Numpad - Seniply-aligned) - Tri-layer EXTEND+SYM
     // ========================================================================
-    // Left: Clean numpad support - space, . , _ on top, modifiers, utilities on bottom
-    //       Top: Space, dot/comma for decimals (1.5, 1,000), underscore for literals (1_000_000)
-    //       Home: A=Shift/R=Alt/S=Gui/T=Ctrl/D=AltGr - all 5 modifiers (thumbs occupied in tri-layer)
-    //       Bottom: F13, TAB(C), ENTER(V), BSPC(B) - Seniply-aligned editing keys
+    // Left: Clean layout - space on top, modifiers on home, editing on bottom
+    //       Top: Space at pos4 (thumb occupied in tri-layer)
+    //       Home: All 5 one-shot modifiers (thumbs occupied in tri-layer)
+    //       Bottom: TAB BSPC ENTER (mimics thumb order for muscle memory)
     // Right: Standard numpad - = 7 8 9 + / * 4 5 6 - / 0 1 2 3 /
     [_NUM] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
-      KC_ESC,  KC_SPC,  KC_DOT,  KC_COMM, KC_UNDS, KC_NO,                        KC_EQL,  KC_7,    KC_8,    KC_9,    KC_PLUS, FUN_KEY,
+      KC_ESC,  KC_NO,   KC_NO,   KC_NO,   KC_SPC,  KC_NO,                        KC_EQL,  KC_7,    KC_8,    KC_9,    KC_PLUS, FUN_KEY,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       MY_HYPR, OS_SHFT, OS_ALT,  OS_GUI,  OS_CTRL, OS_ALTGR,                     KC_ASTR, KC_4,    KC_5,    KC_6,    KC_MINS, MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
-      LLOCK,   KC_NO,   KC_F13,  KC_TAB,  KC_ENT,  KC_BSPC,                      KC_0,    KC_1,    KC_2,    KC_3,    KC_SLSH, LLOCK,
+      LLOCK,   KC_NO,   KC_NO,   KC_TAB,  KC_BSPC, KC_ENT,                       KC_0,    KC_1,    KC_2,    KC_3,    KC_SLSH, LLOCK,
   //└────────┴────────┴────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┴────────┴────────┘
                                  _______, _______, _______,                      _______, _______, _______
   //                            └────────┴────────┴────────┘                    └────────┴────────┴────────┘
@@ -142,12 +142,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ========================================================================
     // Layer 4: FUN (F-keys + Media - Seniply-aligned)
     // ========================================================================
-    // Left: Media controls (bottom), one-shot mods (home row) - consistent with EXTEND/SYM/NUM
+    // Left: F14 (Hammerspoon utility), mods (home), media (bottom)
+    //       Top: F14 for mic toggle or other Hammerspoon-bound utilities
     //       Home row: A=Shift/R=Alt/S=Gui/T=Ctrl/D=AltGr - all 5 modifiers for consistency
     // Right: Numpad-style F-keys (F7-9, F4-6, F1-3)
     [_FUN] = LAYOUT_split_3x6_3(
   //┌────────┬────────┬────────┬────────┬────────┬────────┐                    ┌────────┬────────┬────────┬────────┬────────┬────────┐
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                        KC_NO,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_NO,
+      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_F14,  KC_NO,                        KC_NO,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_NO,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
       MY_HYPR, OS_SHFT, OS_ALT,  OS_GUI,  OS_CTRL, OS_ALTGR,                     KC_NO,   KC_F4,   KC_F5,   KC_F6,   KC_F11,  MY_MEH,
   //├────────┼────────┼────────┼────────┼────────┼────────┤                    ├────────┼────────┼────────┼────────┼────────┼────────┤
@@ -395,4 +396,31 @@ void matrix_scan_user(void) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     // When both EXTEND and SYM are active, activate NUM layer
     return update_tri_layer_state(state, _EXTEND, _SYM, _NUM);
+}
+
+// ============================================================================
+// CAPS WORD CONFIGURATION
+// ============================================================================
+// Custom callback to handle which keys continue/break caps word
+// Required because we use custom OS_SHFT keycode
+
+bool caps_word_press_user(uint16_t keycode) {
+    switch (keycode) {
+        // Letters - shift them
+        case KC_A ... KC_Z:
+        case KC_MINS:
+            add_weak_mods(MOD_BIT(KC_LSFT));
+            return true;
+        // Continue without shift
+        case KC_1 ... KC_0:
+        case KC_BSPC:
+        case KC_DEL:
+        case KC_UNDS:
+            return true;
+        // Custom OS_SHFT should continue caps word (inverts via registered KC_LSFT)
+        case OS_SHFT:
+            return true;
+        default:
+            return false;
+    }
 }

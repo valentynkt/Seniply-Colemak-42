@@ -17,8 +17,10 @@
 #define FLOW_ONESHOT_WAIT_TERM 500      // Hold >500ms = normal mod/layer, not oneshot
 #define FLOW_LAYERS_ENABLE              // Enable oneshot layer support
 
-// Caps Word configuration (works with OS_SHFT)
-#define DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD  // Double-tap OS_SHFT to activate caps word
+// Caps Word configuration (works with custom OS_SHFT via custom double-tap detection)
+// Note: DOUBLE_TAP_SHIFT_TURNS_ON_CAPS_WORD removed - doesn't work with custom OS_SHFT
+// Double-tap detection is implemented in oneshot.c instead
+#define CAPS_WORD_INVERT_ON_SHIFT            // Shift inverts case during caps word (for "PDFs", "iPhone")
 #define CAPS_WORD_IDLE_TIMEOUT 5000          // 5 second timeout for caps word
 
 // Layer lock configuration

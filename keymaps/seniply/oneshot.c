@@ -5,7 +5,11 @@
 // ============================================================================
 // Pure sticky behavior: tap queues modifier until consumed by next keypress
 // No timeout, no hold detection - simple and predictable
-// Perfect for shift with caps word double-tap integration
+// Includes custom double-tap detection for caps word (shift only)
+
+// Static state for shift double-tap detection (only for KC_LSFT)
+static uint16_t last_shift_tap_time = 0;
+static bool shift_tapped = false;
 
 void update_oneshot_callum(
     oneshot_state *state,
@@ -14,16 +18,45 @@ void update_oneshot_callum(
     uint16_t keycode,
     keyrecord_t *record
 ) {
-    // Special handling for shift + caps word integration
-    // If caps word just activated (double-tap shift), clear oneshot state
-    if (keycode == trigger && mod == KC_LSFT && !record->event.pressed) {
-        if (is_caps_word_on()) {
-            *state = os_up_unqueued;
-            unregister_code(mod);
-            return;
+    // ========== SHIFT DOUBLE-TAP DETECTION (KC_LSFT only) ==========
+    if (keycode == trigger && mod == KC_LSFT) {
+        if (record->event.pressed) {
+            // KEYDOWN: Reset expired tap state
+            if (shift_tapped && timer_elapsed(last_shift_tap_time) >= CAPS_WORD_DOUBLE_TAP_TERM) {
+                shift_tapped = false;
+            }
+            // Normal keydown handling
+            if (*state == os_up_unqueued) {
+                register_code(mod);
+            }
+            *state = os_down_unused;
+        } else {
+            // KEYUP: Check for double-tap (only if this was a clean tap)
+            if (*state == os_down_unused) {
+                // This was a tap (not hold+use)
+                if (shift_tapped && timer_elapsed(last_shift_tap_time) < CAPS_WORD_DOUBLE_TAP_TERM) {
+                    // Double-tap detected!
+                    caps_word_toggle();
+                    shift_tapped = false;
+                    *state = os_up_unqueued;
+                    unregister_code(mod);
+                    return;
+                }
+                // Single tap - queue oneshot and mark for potential double-tap
+                *state = os_up_queued;
+                shift_tapped = true;
+                last_shift_tap_time = timer_read();
+            } else if (*state == os_down_used) {
+                // Was used while held - not a tap, reset double-tap state
+                shift_tapped = false;
+                *state = os_up_unqueued;
+                unregister_code(mod);
+            }
         }
+        return;
     }
 
+    // ========== NON-SHIFT TRIGGER HANDLING (unchanged for other modifiers) ==========
     if (keycode == trigger) {
         if (record->event.pressed) {
             // Trigger keydown
@@ -47,30 +80,34 @@ void update_oneshot_callum(
                 break;
             }
         }
+        return;
+    }
+
+    // ========== OTHER KEY HANDLING ==========
+    if (record->event.pressed) {
+        // KEYDOWN of other key
+        if (is_oneshot_cancel_key(keycode) && *state != os_up_unqueued) {
+            // Cancel oneshot on designated cancel keydown
+            *state = os_up_unqueued;
+            unregister_code(mod);
+        } else if (!is_oneshot_ignored_key(keycode)) {
+            // Mark as "will be consumed" immediately on KEYDOWN (fixes fast typing)
+            if (*state == os_down_unused) {
+                *state = os_down_used;
+            } else if (*state == os_up_queued) {
+                // First key pressed after oneshot - mark as used
+                *state = os_up_queued_used;
+            }
+        }
     } else {
-        if (record->event.pressed) {
-            // KEYDOWN of other key
-            if (is_oneshot_cancel_key(keycode) && *state != os_up_unqueued) {
-                // Cancel oneshot on designated cancel keydown
+        // KEYUP of other key
+        if (!is_oneshot_ignored_key(keycode)) {
+            // Release modifier on keyup if marked as used
+            if (*state == os_up_queued_used) {
+                // Reset double-tap state when oneshot is consumed (prevents false triggers)
+                shift_tapped = false;
                 *state = os_up_unqueued;
                 unregister_code(mod);
-            } else if (!is_oneshot_ignored_key(keycode)) {
-                // Mark as "will be consumed" immediately on KEYDOWN (fixes fast typing)
-                if (*state == os_down_unused) {
-                    *state = os_down_used;
-                } else if (*state == os_up_queued) {
-                    // First key pressed after oneshot - mark as used
-                    *state = os_up_queued_used;
-                }
-            }
-        } else {
-            // KEYUP of other key
-            if (!is_oneshot_ignored_key(keycode)) {
-                // Release modifier on keyup if marked as used
-                if (*state == os_up_queued_used) {
-                    *state = os_up_unqueued;
-                    unregister_code(mod);
-                }
             }
         }
     }

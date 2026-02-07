@@ -28,6 +28,10 @@ typedef struct {
 #define FLOW_ONESHOT_WAIT_TERM 500  // Hold detection: >500ms = normal mod
 #endif
 
+#ifndef CAPS_WORD_DOUBLE_TAP_TERM
+#define CAPS_WORD_DOUBLE_TAP_TERM 150  // ms between taps for caps word toggle (fast, less accidental)
+#endif
+
 // Original Callum oneshot implementation (no timers, no auto-timeout)
 // Pure sticky behavior: tap queues modifier until next key, no timeout
 // Perfect for shift with caps word integration
